@@ -1,0 +1,105 @@
+[1mdiff --git a/client/src/components/ThreadList.jsx b/client/src/components/ThreadList.jsx[m
+[1mindex a055ba6..0347c44 100644[m
+[1m--- a/client/src/components/ThreadList.jsx[m
+[1m+++ b/client/src/components/ThreadList.jsx[m
+[36m@@ -1,46 +1,23 @@[m
+[31m-// ─────────────────────────────────────────────────────────────[m
+[31m-// TODO (2/2): Replace this hand-rolled fetching with TanStack Query.[m
+[31m-//[m
+[31m-// Requirements (the auto-grader checks these):[m
+[31m-//   • import { useQuery } from "@tanstack/react-query"[m
+[31m-//   • Remove ALL useState and useEffect used for data fetching.[m
+[31m-//   • Call: useQuery({ queryKey: ["threads"], queryFn: getThreads })[m
+[31m-//       - pass the function REFERENCE getThreads, NOT getThreads()[m
+[31m-//   • Render three states:[m
+[31m-//       - a loading indicator while isPending is true[m
+[31m-//       - an error message while isError is true[m
+[31m-//       - one list item per thread when data is available[m
+[31m-//[m
+[31m-// Example shape:[m
+[31m-//   const { data, isPending, isError, error } = useQuery({[m
+[31m-//     queryKey: ["threads"],[m
+[31m-//     queryFn: getThreads,[m
+[31m-//   });[m
+[31m-//   if (isPending) return <p>Loading…</p>;[m
+[31m-//   if (isError)   return <p>Error: {error.message}</p>;[m
+[31m-//   return <ul>{data.map((t) => <li key={t.id}>{t.title}</li>)}</ul>;[m
+[31m-// ─────────────────────────────────────────────────────────────[m
+[31m-import { useState, useEffect } from "react";[m
+[32m+[m[32mimport { useQuery } from "@tanstack/react-query";[m
+ import { getThreads } from "../services/threads.service";[m
+ [m
+ export default function ThreadList() {[m
+[31m-  const [threads, setThreads] = useState([]);[m
+[31m-  const [loading, setLoading] = useState(true);[m
+[31m-  const [error, setError] = useState(null);[m
+[32m+[m[32m  const { data, isPending, isError, error } = useQuery({[m
+[32m+[m[32m    queryKey: ["threads"],[m
+[32m+[m[32m    queryFn: getThreads,[m
+[32m+[m[32m  });[m
+ [m
+[31m-  useEffect(() => {[m
+[31m-    getThreads()[m
+[31m-      .then(setThreads)[m
+[31m-      .catch(setError)[m
+[31m-      .finally(() => setLoading(false));[m
+[31m-  }, []);[m
+[32m+[m[32m  if (isPending) {[m
+[32m+[m[32m    return <p>Loading threads…</p>;[m
+[32m+[m[32m  }[m
+ [m
+[31m-  if (loading) return <p>Loading threads…</p>;[m
+[31m-  if (error) return <p className="err">Error: {error.message}</p>;[m
+[32m+[m[32m  if (isError) {[m
+[32m+[m[32m    return <p className="err">Error: {error.message}</p>;[m
+[32m+[m[32m  }[m
+ [m
+   return ([m
+     <ul className="threads">[m
+[31m-      {threads.map((t) => ([m
+[32m+[m[32m      {data.map((t) => ([m
+         <li className="card" key={t.id}>[m
+           <h3>{t.title}</h3>[m
+           <p>{t.body}</p>[m
+[36m@@ -48,4 +25,4 @@[m [mexport default function ThreadList() {[m
+       ))}[m
+     </ul>[m
+   );[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/client/src/main.jsx b/client/src/main.jsx[m
+[1mindex 52e3a7e..fa22e72 100644[m
+[1m--- a/client/src/main.jsx[m
+[1m+++ b/client/src/main.jsx[m
+[36m@@ -1,20 +1,17 @@[m
+[31m-// ─────────────────────────────────────────────────────────────[m
+[31m-// TODO (1/2): Set up TanStack Query.[m
+[31m-//   • import { QueryClient, QueryClientProvider } from "@tanstack/react-query"[m
+[31m-//   • create ONE QueryClient instance[m
+[31m-//   • wrap <App /> in <QueryClientProvider client={queryClient}>[m
+[31m-//   • (recommended) add <ReactQueryDevtools /> so you can screenshot the cache[m
+[31m-//[m
+[31m-// Right now there is NO provider, so any useQuery you add will throw[m
+[31m-// "No QueryClient set". Add the provider here first.[m
+[31m-// ─────────────────────────────────────────────────────────────[m
+ import React from "react";[m
+ import ReactDOM from "react-dom/client";[m
+[32m+[m[32mimport { QueryClient, QueryClientProvider } from "@tanstack/react-query";[m
+[32m+[m[32mimport { ReactQueryDevtools } from "@tanstack/react-query-devtools";[m
+ import App from "./App.jsx";[m
+ import "./index.css";[m
+ [m
+[32m+[m[32mconst queryClient = new QueryClient();[m
+[32m+[m
+ ReactDOM.createRoot(document.getElementById("root")).render([m
+   <React.StrictMode>[m
+[31m-    <App />[m
+[32m+[m[32m    <QueryClientProvider client={queryClient}>[m
+[32m+[m[32m      <App />[m
+[32m+[m[32m      <ReactQueryDevtools initialIsOpen={false} />[m
+[32m+[m[32m    </QueryClientProvider>[m
+   </React.StrictMode>[m
+[31m-);[m
+[32m+[m[32m);[m
+\ No newline at end of file[m
