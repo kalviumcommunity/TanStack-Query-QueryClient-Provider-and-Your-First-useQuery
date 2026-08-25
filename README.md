@@ -31,3 +31,5 @@ Open http://localhost:5173 — you'll see the thread list (fetched the old way).
 
 - DevTools → **Network** → one `threads` request per load.
 - ReactQueryDevtools panel shows a `['threads']` entry in the cache after first load.
+- <img width="1917" height="1077" alt="image" src="https://github.com/user-attachments/assets/02519730-575c-48b8-aaac-4eac26aeeb53" />
+
