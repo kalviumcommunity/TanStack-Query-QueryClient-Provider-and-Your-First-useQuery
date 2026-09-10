@@ -1,6 +1,7 @@
 import ThreadList from "./components/ThreadList.jsx";
 
 // App is already wired. It renders <ThreadList />.
+
 // Your work happens in main.jsx (provider) and ThreadList.jsx (useQuery).
 export default function App() {
   return (

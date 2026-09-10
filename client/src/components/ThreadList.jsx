@@ -1,51 +1,53 @@
-// ─────────────────────────────────────────────────────────────
-// TODO (2/2): Replace this hand-rolled fetching with TanStack Query.
-//
-// Requirements (the auto-grader checks these):
-//   • import { useQuery } from "@tanstack/react-query"
-//   • Remove ALL useState and useEffect used for data fetching.
-//   • Call: useQuery({ queryKey: ["threads"], queryFn: getThreads })
-//       - pass the function REFERENCE getThreads, NOT getThreads()
-//   • Render three states:
-//       - a loading indicator while isPending is true
-//       - an error message while isError is true
-//       - one list item per thread when data is available
-//
-// Example shape:
-//   const { data, isPending, isError, error } = useQuery({
-//     queryKey: ["threads"],
-//     queryFn: getThreads,
-//   });
-//   if (isPending) return <p>Loading…</p>;
-//   if (isError)   return <p>Error: {error.message}</p>;
-//   return <ul>{data.map((t) => <li key={t.id}>{t.title}</li>)}</ul>;
-// ─────────────────────────────────────────────────────────────
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+
 import { getThreads } from "../services/threads.service";
+import { useDebounce } from "../hooks/useDebounce";
+import SearchBar from "./SearchBar";
+import SortDropdown from "./SortDropdown";
 
 export default function ThreadList() {
-  const [threads, setThreads] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("newest");
 
-  useEffect(() => {
-    getThreads()
-      .then(setThreads)
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, []);
+  const debouncedSearch = useDebounce(search, 300);
 
-  if (loading) return <p>Loading threads…</p>;
-  if (error) return <p className="err">Error: {error.message}</p>;
+  const { data = [], isPending, isFetching, isError, error } = useQuery({
+    queryKey: ["threads", { search: debouncedSearch, sort }],
+    queryFn: ({ queryKey: [, filters] }) => getThreads(filters),
+    placeholderData: keepPreviousData,
+  });
 
   return (
-    <ul className="threads">
-      {threads.map((t) => (
-        <li className="card" key={t.id}>
-          <h3>{t.title}</h3>
-          <p>{t.body}</p>
-        </li>
-      ))}
-    </ul>
+    <>
+      <SearchBar value={search} onChange={setSearch} />
+      <SortDropdown value={sort} onChange={setSort} />
+
+      {isPending && <p>Loading threads...</p>}
+
+      {isError && (
+        <p className="err">
+          Error: {error instanceof Error ? error.message : "Unable to load threads."}
+        </p>
+      )}
+
+      {!isPending && !isError && (
+        data.length > 0 ? (
+          <>
+            {isFetching && <p className="muted">Updating threads...</p>}
+            <ul className="threads">
+              {data.map((thread) => (
+                <li className="card" key={thread.id}>
+                  <h3>{thread.title}</h3>
+                  <p>{thread.body}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className="muted">No threads found.</p>
+        )
+      )}
+    </>
   );
 }
