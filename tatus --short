@@ -1,0 +1,91 @@
+[1mdiff --git a/client/package.json b/client/package.json[m
+[1mindex 9370760..b3a8964 100644[m
+[1m--- a/client/package.json[m
+[1m+++ b/client/package.json[m
+[36m@@ -9,8 +9,8 @@[m
+     "preview": "vite preview"[m
+   },[m
+   "dependencies": {[m
+[31m-    "@tanstack/react-query": "^5.59.0",[m
+[31m-    "@tanstack/react-query-devtools": "^5.59.0",[m
+[32m+[m[32m    "@tanstack/react-query": "^5.104.1",[m
+[32m+[m[32m    "@tanstack/react-query-devtools": "^5.104.1",[m
+     "axios": "^1.7.7",[m
+     "react": "^18.3.1",[m
+     "react-dom": "^18.3.1"[m
+[1mdiff --git a/client/src/components/ThreadList.jsx b/client/src/components/ThreadList.jsx[m
+[1mindex a055ba6..770a336 100644[m
+[1m--- a/client/src/components/ThreadList.jsx[m
+[1m+++ b/client/src/components/ThreadList.jsx[m
+[36m@@ -20,27 +20,21 @@[m
+ //   if (isError)   return <p>Error: {error.message}</p>;[m
+ //   return <ul>{data.map((t) => <li key={t.id}>{t.title}</li>)}</ul>;[m
+ // ─────────────────────────────────────────────────────────────[m
+[31m-import { useState, useEffect } from "react";[m
+[32m+[m[32m// import { useState, useEffect } from "react";[m
+[32m+[m[32mimport { useQuery } from "@tanstack/react-query";[m
+ import { getThreads } from "../services/threads.service";[m
+ [m
+ export default function ThreadList() {[m
+[31m-  const [threads, setThreads] = useState([]);[m
+[31m-  const [loading, setLoading] = useState(true);[m
+[31m-  const [error, setError] = useState(null);[m
+[31m-[m
+[31m-  useEffect(() => {[m
+[31m-    getThreads()[m
+[31m-      .then(setThreads)[m
+[31m-      .catch(setError)[m
+[31m-      .finally(() => setLoading(false));[m
+[31m-  }, []);[m
+[31m-[m
+[31m-  if (loading) return <p>Loading threads…</p>;[m
+[31m-  if (error) return <p className="err">Error: {error.message}</p>;[m
+[32m+[m[32m  const { data, isPending, isError, error } = useQuery({[m
+[32m+[m[32m    queryKey: ["threads"],[m
+[32m+[m[32m    queryFn: getThreads,[m
+[32m+[m[32m  });[m
+ [m
+[32m+[m[32m  if (isPending) return <p>Loading threads…</p>;[m
+[32m+[m[32m  if (isError) return <p className="err">Error: {error.message}</p>;[m
+   return ([m
+     <ul className="threads">[m
+[31m-      {threads.map((t) => ([m
+[32m+[m[32m      {data.map((t) => ([m
+         <li className="card" key={t.id}>[m
+           <h3>{t.title}</h3>[m
+           <p>{t.body}</p>[m
+[36m@@ -49,3 +43,5 @@[m [mexport default function ThreadList() {[m
+     </ul>[m
+   );[m
+ }[m
+[41m+  [m
+[41m+  [m
+\ No newline at end of file[m
+[1mdiff --git a/client/src/main.jsx b/client/src/main.jsx[m
+[1mindex 52e3a7e..328f474 100644[m
+[1m--- a/client/src/main.jsx[m
+[1m+++ b/client/src/main.jsx[m
+[36m@@ -10,11 +10,21 @@[m
+ // ─────────────────────────────────────────────────────────────[m
+ import React from "react";[m
+ import ReactDOM from "react-dom/client";[m
+[32m+[m[32mimport { QueryClient, QueryClientProvider } from "@tanstack/react-query";[m
+[32m+[m[32mimport { ReactQueryDevtools } from "@tanstack/react-query-devtools";[m
+ import App from "./App.jsx";[m
+ import "./index.css";[m
+ [m
+[32m+[m[32mconst queryClient = new QueryClient();[m
+[32m+[m
+ ReactDOM.createRoot(document.getElementById("root")).render([m
+   <React.StrictMode>[m
+[31m-    <App />[m
+[32m+[m[32m    <QueryClientProvider client={queryClient}>[m
+[32m+[m[32m      <App />[m
+[32m+[m[32m      <ReactQueryDevtools initialIsOpen={false} />[m
+[32m+[m[32m    </QueryClientProvider>[m
+   </React.StrictMode>[m
+ );[m
+[41m+[m
+[41m+   [m
+[41m+ [m
+\ No newline at end of file[m
